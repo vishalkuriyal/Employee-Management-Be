@@ -3,8 +3,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IShift extends Document {
   name: string;
-  startTime: string; // "HH:MM" format
-  endTime: string; // "HH:MM" format
+  displayName: string; // ⭐ ADD THIS
+  startTime: string;
+  endTime: string;
   isCrossMidnight: boolean;
   graceMinutes: number;
   minimumHours: number;
@@ -19,13 +20,18 @@ const shiftSchema = new Schema<IShift>(
     name: {
       type: String,
       required: true,
-      enum: ['Morning', 'Day', 'Night', 'General'],
+      enum: ['Morning', 'Night', 'General']
+      // Remove unique: true
+    },
+    displayName: { // ⭐ ADD THIS FIELD
+      type: String,
+      required: true,
       unique: true
     },
     startTime: {
       type: String,
       required: true,
-      match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/ // HH:MM format
+      match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
     },
     endTime: {
       type: String,

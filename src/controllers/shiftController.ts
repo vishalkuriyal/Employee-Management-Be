@@ -56,14 +56,13 @@ const getShiftById = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
-
-// ========================================
 // CREATE NEW SHIFT
 // ========================================
 const createShift = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
       name,
+      displayName, // ⭐ ADD THIS
       startTime,
       endTime,
       graceMinutes,
@@ -73,26 +72,27 @@ const createShift = async (req: Request, res: Response): Promise<void> => {
     } = req.body;
 
     // Validation
-    if (!name || !startTime || !endTime) {
+    if (!name || !displayName || !startTime || !endTime) { // ⭐ ADD displayName validation
       res.status(400).json({
         success: false,
-        error: "Name, start time, and end time are required"
+        error: "Name, display name, start time, and end time are required"
       });
       return;
     }
 
-    // Check if shift with same name already exists
-    const existingShift = await Shift.findOne({ name });
+    // Check if shift with same displayName already exists (changed from name)
+    const existingShift = await Shift.findOne({ displayName }); // ⭐ CHANGED
     if (existingShift) {
       res.status(400).json({
         success: false,
-        error: "Shift with this name already exists"
+        error: "Shift with this display name already exists"
       });
       return;
     }
 
     const newShift = new Shift({
       name,
+      displayName, // ⭐ ADD THIS
       startTime,
       endTime,
       graceMinutes: graceMinutes || 15,
@@ -126,12 +126,14 @@ const updateShift = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const {
       name,
+      displayName, // ⭐ ADD THIS
       startTime,
       endTime,
       graceMinutes,
       minimumHours,
       isCrossMidnight,
-      description
+      description,
+      isActive // ⭐ ADD THIS (for edit form)
     } = req.body;
 
     const shift = await Shift.findById(id);
@@ -144,13 +146,13 @@ const updateShift = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if new name conflicts with existing shift
-    if (name && name !== shift.name) {
-      const existingShift = await Shift.findOne({ name });
+    // Check if new displayName conflicts with existing shift
+    if (displayName && displayName !== shift.displayName) { // ⭐ CHANGED
+      const existingShift = await Shift.findOne({ displayName });
       if (existingShift) {
         res.status(400).json({
           success: false,
-          error: "Shift with this name already exists"
+          error: "Shift with this display name already exists"
         });
         return;
       }
@@ -158,12 +160,14 @@ const updateShift = async (req: Request, res: Response): Promise<void> => {
 
     // Update fields
     if (name) shift.name = name;
+    if (displayName) shift.displayName = displayName; // ⭐ ADD THIS
     if (startTime) shift.startTime = startTime;
     if (endTime) shift.endTime = endTime;
     if (graceMinutes !== undefined) shift.graceMinutes = graceMinutes;
     if (minimumHours !== undefined) shift.minimumHours = minimumHours;
     if (isCrossMidnight !== undefined) shift.isCrossMidnight = isCrossMidnight;
     if (description !== undefined) shift.description = description;
+    if (isActive !== undefined) shift.isActive = isActive; // ⭐ ADD THIS
 
     await shift.save();
 
