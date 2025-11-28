@@ -17,7 +17,7 @@ import attendanceRouter from "./routes/attendance.ts"
 import shiftRoutes from "./routes/shifts.ts"
 
 const app = express()
-const port = process.env.PORT || "8000"
+const port = process.env.PORT || "8001"
 const BASE_URL = process.env.BASE_URL // e.g. https://management.techqilla.com
 // default FRONTEND_ORIGIN to BASE_URL or localhost with port so logs and CORS have a sensible fallback
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || BASE_URL || `http://localhost:${port}`
