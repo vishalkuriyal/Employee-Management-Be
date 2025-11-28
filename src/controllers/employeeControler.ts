@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import Employee from "../models/employee.ts";
-import User from "../models/user.ts";
+import Employee from "../models/employee";
+import User from "../models/user";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import fs from "fs";

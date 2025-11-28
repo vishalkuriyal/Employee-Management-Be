@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import Attendance from "../models/attendance.ts";
-import Employee from "../models/employee.ts";
-import Leave from "../models/leave.ts";
-import Shift from "../models/shift.ts";
+import Attendance from "../models/attendance";
+import Employee from "../models/employee";
+import Leave from "../models/leave";
+import Shift from "../models/shift";
 import { Types } from "mongoose";
 
 // ========================================

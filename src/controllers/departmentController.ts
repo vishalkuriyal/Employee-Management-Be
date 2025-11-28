@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Department from "../models/department.ts";
+import Department from "../models/department";
 
 const addDepartment = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -1,5 +1,5 @@
 import express from "express"
-import authMiddleWare from "../middleware/authMiddleware.ts"
+import authMiddleWare from "../middleware/authMiddleware"
 import {
   checkIn,
   checkOut,
@@ -9,7 +9,7 @@ import {
   getAllEmployeesAttendance,
   getAttendanceStatistics,
   getTodayAttendanceDetails
-} from "../controllers/attendanceController.ts"
+} from "../controllers/attendanceController"
 
 const router = express.Router()
 // Employee routes

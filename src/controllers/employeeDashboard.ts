@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import Employee from "../models/employee.ts";
-import Leave from "../models/leave.ts";
-import Attendance from "../models/attendance.ts";
-import Shift from "../models/shift.ts";
+import Employee from "../models/employee";
+import Leave from "../models/leave";
+import Attendance from "../models/attendance";
+import Shift from "../models/shift";
 
 // ========================================
 // SHIFT HELPER FUNCTIONS
