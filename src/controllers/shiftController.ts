@@ -185,7 +185,7 @@ const updateShift = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
-
+  
 // ========================================
 // DELETE SHIFT
 // ========================================
