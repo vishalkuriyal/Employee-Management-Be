@@ -3,13 +3,94 @@ import Leave from "../models/leave.ts";
 import Employee from "../models/employee.ts";
 import Attendance from "../models/attendance.ts";
 import mongoose, { Types } from "mongoose";
+import nodemailer from "nodemailer";
 
 const MONTHLY_LEAVE_ALLOCATION = {
   casual: 1,
   sick: 1
 };
 
-// ... (keep all your existing interfaces and helper functions)
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Your Gmail address
+    pass: process.env.EMAIL_PASSWORD // Your Gmail app password
+  }
+});
+
+// Function to send leave application email
+const sendLeaveApplicationEmail = async (
+  employeeName: string,
+  employeeEmail: string,
+  employeeCode: string,
+  department: string,
+  leaveType: string,
+  fromDate: Date,
+  endDate: Date,
+  totalDays: number,
+  reason: string,
+  isHalfDay: boolean,
+  halfDayPeriod?: string
+) => {
+  try {
+    const mailOptions = {
+      from: `${employeeName} <${process.env.EMAIL_USER}>`,
+      replyTo: employeeEmail, // Employee's email for replies
+      to: process.env.ADMIN_EMAIL, // Your Gmail where you want to receive notifications
+      subject: `New Leave Application - ${employeeName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
+            New Leave Application
+          </h2>
+          
+          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #555; margin-top: 0;">Employee Details</h3>
+            <p><strong>Name:</strong> ${employeeName}</p>
+            <p><strong>Email:</strong> ${employeeEmail}</p>
+            <p><strong>Employee Code:</strong> ${employeeCode}</p>
+            <p><strong>Department:</strong> ${department}</p>
+          </div>
+          
+          <div style="background-color: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+            <h3 style="color: #555; margin-top: 0;">Leave Details</h3>
+            <p><strong>Leave Type:</strong> <span style="text-transform: capitalize;">${leaveType}</span></p>
+            <p><strong>From Date:</strong> ${fromDate.toLocaleDateString('en-IN', { 
+              day: '2-digit', 
+              month: 'short', 
+              year: 'numeric' 
+            })}</p>
+            <p><strong>To Date:</strong> ${endDate.toLocaleDateString('en-IN', { 
+              day: '2-digit', 
+              month: 'short', 
+              year: 'numeric' 
+            })}</p>
+            <p><strong>Duration:</strong> ${totalDays} ${totalDays === 1 ? 'day' : 'days'}</p>
+            ${isHalfDay ? `<p><strong>Half Day Period:</strong> ${halfDayPeriod}</p>` : ''}
+            <p><strong>Reason:</strong> ${reason}</p>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 5px;">
+            <p style="margin: 0; color: #856404;">
+              ⏰ <strong>Action Required:</strong> Please review and approve/reject this leave application.
+            </p>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center; color: #888; font-size: 12px;">
+            <p>This is an automated notification from the Employee Management System</p>
+          </div>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Leave application email sent successfully');
+  } catch (error) {
+    console.error('Error sending leave application email:', error);
+    // Don't throw error - we don't want email failure to stop leave creation
+  }
+};
 
 interface PopulatedUser {
   _id: Types.ObjectId;
@@ -179,7 +260,9 @@ const addLeave = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    const employee = await Employee.findOne({ userId });
+    const employee = await Employee.findOne({ userId })
+      .populate('userId', 'name email')
+      .populate('department', 'name');
 
     if (!employee) {
       res.status(404).json({
@@ -263,6 +346,30 @@ const addLeave = async (req: Request, res: Response): Promise<void> => {
     });
 
     await newLeave.save();
+
+    // Get employee info for email - make sure it's populated
+    const populatedEmployee = await Employee.findById(employee._id)
+      .populate('userId', 'name email')
+      .populate('department', 'name');
+
+    const employeeInfo = getEmployeeInfo(populatedEmployee);
+    const employeeEmail = isPopulatedEmployee(populatedEmployee) 
+      ? populatedEmployee.userId?.email 
+      : '';
+    
+    await sendLeaveApplicationEmail(
+      employeeInfo.name,
+      employeeEmail || 'noreply@company.com',
+      employeeInfo.employeeCode,
+      employeeInfo.department,
+      leaveType,
+      startDate,
+      endDateObj,
+      totalDays,
+      reason,
+      isHalfDay || false,
+      halfDayPeriod
+    );
 
     const newRemainingLeaves = remainingLeaves - totalDays;
 
