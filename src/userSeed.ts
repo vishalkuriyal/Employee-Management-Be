@@ -1,6 +1,6 @@
-import User from "./models/user.ts"
+import User from "./models/user"
 import bcrypt from "bcryptjs"
-import { connectToDatabase, closeConnection } from "./config/db.ts"
+import { connectToDatabase, closeConnection } from "./config/db"
 
 const userRegister = async () => {
   try {

@@ -6,8 +6,8 @@ import {
   updateShift,
   deleteShift,
   getShiftStatistics
-} from '../controllers/shiftController.ts';
-import authMiddleware from '../middleware/authMiddleware.ts';
+} from '../controllers/shiftController';
+import authMiddleware from '../middleware/authMiddleware';
 
 const router = express.Router();
 

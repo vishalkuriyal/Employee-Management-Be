@@ -1,6 +1,6 @@
 import express from "express"
-import authMiddleWare from "../middleware/authMiddleware.ts"
-import { addDepartment, getDepartments, getDepartment, UpdateDepartment, deleteDepartment } from "../controllers/departmentController.ts"
+import authMiddleWare from "../middleware/authMiddleware"
+import { addDepartment, getDepartments, getDepartment, UpdateDepartment, deleteDepartment } from "../controllers/departmentController"
 
 const router = express.Router()
 

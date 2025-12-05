@@ -1,5 +1,5 @@
 // utils/shiftHelpers.ts
-import type { IShift } from "../models/shift.ts";
+import type { IShift } from "../models/shift";
 
 interface ShiftTime {
   hours: number;

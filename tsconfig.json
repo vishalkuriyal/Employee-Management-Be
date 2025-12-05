@@ -3,8 +3,7 @@
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "noEmit": true, // ✅ no output .js files
-    "allowImportingTsExtensions": true, // ✅ allows `.ts` in imports
+    "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Salary from "../models/salary.ts";
+import Salary from "../models/salary";
 
 const addSalary = async (req: Request, res: Response): Promise<void> => {
   try {

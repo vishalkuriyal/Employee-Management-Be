@@ -1,6 +1,6 @@
 // controllers/shiftController.ts
 import type { Request, Response } from "express";
-import Shift from "../models/shift.ts";
+import Shift from "../models/shift";
 
 // ========================================
 // GET ALL SHIFTS
@@ -194,7 +194,7 @@ const deleteShift = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
     // Check if any employees are assigned to this shift
-    const Employee = (await import("../models/employee.ts")).default;
+    const Employee = (await import("../models/employee")).default;
     const employeesWithShift = await Employee.countDocuments({ shiftId: id });
 
     if (employeesWithShift > 0) {
@@ -234,7 +234,7 @@ const deleteShift = async (req: Request, res: Response): Promise<void> => {
 // ========================================
 const getShiftStatistics = async (req: Request, res: Response): Promise<void> => {
   try {
-    const Employee = (await import("../models/employee.ts")).default;
+    const Employee = (await import("../models/employee")).default;
     
     const shifts = await Shift.find();
     

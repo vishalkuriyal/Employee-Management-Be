@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import Leave from "../models/leave.ts";
-import Employee from "../models/employee.ts";
-import Attendance from "../models/attendance.ts";
+import Leave from "../models/leave";
+import Employee from "../models/employee";
+import Attendance from "../models/attendance";
 import mongoose, { Types } from "mongoose";
 import nodemailer from "nodemailer";
 
