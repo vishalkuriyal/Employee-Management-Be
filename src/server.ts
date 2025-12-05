@@ -22,24 +22,27 @@ async function startServer() {
   try {
     await connectToDatabase();
     // Middleware
-    app.use(cors())
+    app.use(cors({
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
+      credentials: true
+    }))
     app.use(express.json())
-    app.use(express.static('public/uploads'))
+    app.use('/uploads', express.static('public/uploads'))
     app.use('/api/auth', authRouter)
     app.use('/api/department', departmentRouter)
     app.use('/api/employees', employeeRouter)
     app.use('/api/salary', salaryRouter)
-    app.use('/api/leave',leaveRouter)
-    app.use('/api/setting',settingRouter)
+    app.use('/api/leave', leaveRouter)
+    app.use('/api/setting', settingRouter)
     app.use('/api/dashboard', dashboardRouter)
-    app.use('/api/attendance',attendanceRouter)
+    app.use('/api/attendance', attendanceRouter)
     app.use('/api/shifts', shiftRoutes);
 
-    
-    
+
+
     // // Routes
     // app.use('/api', routes);
-    
+
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`);
     });
