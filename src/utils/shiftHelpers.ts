@@ -141,8 +141,12 @@ export const formatTimeIST = (date: Date | null | undefined): string | null => {
   // IST is UTC+5:30 -> offset in minutes = 330
   const offsetMinutes = 330;
   const istDate = new Date(dateObj.getTime() + offsetMinutes * 60 * 1000);
-  const hours = String(istDate.getUTCHours()).padStart(2, '0');
+  const hours24 = istDate.getUTCHours();
   const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
   const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  let hours12 = hours24 % 12;
+  if (hours12 === 0) hours12 = 12;
+  const hours = String(hours12).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds} ${period}`;
 };
