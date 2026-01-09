@@ -4,6 +4,7 @@ import Employee from "../models/employee";
 import Leave from "../models/leave";
 import Shift from "../models/shift";
 import { Types } from "mongoose";
+import { formatTimeUTC } from "../utils/shiftHelpers";
 
 // ========================================
 // SHIFT HELPER FUNCTIONS
@@ -583,12 +584,12 @@ const markAttendance = async (req: Request, res: Response): Promise<void> => {
       existingAttendance.remarks = remarks;
       existingAttendance.isManualEntry = true;
       existingAttendance.markedBy = adminUserId;
-      
+
       // Allow manual check-in/out times for half-day
       if (checkIn) existingAttendance.checkIn = new Date(checkIn);
       if (checkOut) existingAttendance.checkOut = new Date(checkOut);
       if (workingHours !== undefined) existingAttendance.workingHours = workingHours;
-      
+
       attendance = await existingAttendance.save();
     } else {
       attendance = new Attendance({
@@ -671,15 +672,6 @@ const getAllEmployeesAttendance = async (req: Request, res: Response): Promise<v
       const attendance = attendanceMap.get(employee._id.toString());
       const empShift = employee.shiftId as any;
 
-      const formatTime = (date: Date | null | undefined) => {
-        if (!date) return null;
-        return new Date(date).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        });
-      };
-
       return {
         employeeId: employee._id.toString(),
         employeeCode: employee.employeeId,
@@ -691,8 +683,8 @@ const getAllEmployeesAttendance = async (req: Request, res: Response): Promise<v
         } : { name: 'Not Assigned', time: '-' },
         attendance: attendance ? {
           status: attendance.status,
-          checkIn: formatTime(attendance.checkIn),
-          checkOut: formatTime(attendance.checkOut),
+          checkIn: formatTimeUTC(attendance.checkIn),
+          checkOut: formatTimeUTC(attendance.checkOut),
           workingHours: attendance.workingHours || 0,
           isLate: attendance.isLate || false,
           lateByMinutes: attendance.lateByMinutes || 0,
