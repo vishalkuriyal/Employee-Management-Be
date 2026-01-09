@@ -2,8 +2,10 @@ import type { Request, Response } from "express";
 import Leave from "../models/leave";
 import Employee from "../models/employee";
 import Attendance from "../models/attendance";
+import Shift from "../models/shift";
 import mongoose, { Types } from "mongoose";
 import nodemailer from "nodemailer";
+import { getShiftDateForTimestamp } from "../utils/shiftHelpers";
 
 const MONTHLY_LEAVE_ALLOCATION = {
   casual: 1,
@@ -56,16 +58,16 @@ const sendLeaveApplicationEmail = async (
           <div style="background-color: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
             <h3 style="color: #555; margin-top: 0;">Leave Details</h3>
             <p><strong>Leave Type:</strong> <span style="text-transform: capitalize;">${leaveType}</span></p>
-            <p><strong>From Date:</strong> ${fromDate.toLocaleDateString('en-IN', { 
-              day: '2-digit', 
-              month: 'short', 
-              year: 'numeric' 
-            })}</p>
-            <p><strong>To Date:</strong> ${endDate.toLocaleDateString('en-IN', { 
-              day: '2-digit', 
-              month: 'short', 
-              year: 'numeric' 
-            })}</p>
+            <p><strong>From Date:</strong> ${fromDate.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      })}</p>
+            <p><strong>To Date:</strong> ${endDate.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      })}</p>
             <p><strong>Duration:</strong> ${totalDays} ${totalDays === 1 ? 'day' : 'days'}</p>
             ${isHalfDay ? `<p><strong>Half Day Period:</strong> ${halfDayPeriod}</p>` : ''}
             <p><strong>Reason:</strong> ${reason}</p>
@@ -181,26 +183,41 @@ const markLeaveAttendance = async (
     const end = new Date(endDate);
     end.setHours(0, 0, 0, 0);
 
+    // Get employee's shift to calculate working hours for half-day
+    const employee = await Employee.findById(employeeId).populate('shiftId');
+    const shift = employee?.shiftId as any;
+
+    // Calculate working hours for half-day (half of shift's minimum hours)
+    const halfDayWorkingHours = shift?.minimumHours ? shift.minimumHours / 2 : 4;
+
     while (currentDate <= end) {
-      const dateToMark = new Date(currentDate);
+      // For shift-aware date handling, use getShiftDateForTimestamp if shift exists
+      let shiftDate = new Date(currentDate);
+
+      if (shift && shift.isCrossMidnight) {
+        // Use shift-aware date for cross-midnight shifts
+        shiftDate = getShiftDateForTimestamp(currentDate, shift);
+      }
 
       const attendanceData = {
         employeeId,
-        date: dateToMark,
+        date: shiftDate,
         status: isHalfDay ? "half-day" as const : "leave" as const,
         leaveId,
         isManualEntry: false,
-        remarks: "Auto-marked due to approved leave"
+        remarks: "Auto-marked due to approved leave",
+        ...(isHalfDay && { workingHours: halfDayWorkingHours }),
+        ...(shift && { shiftId: shift._id })
       };
 
       // Use findOneAndUpdate with upsert to avoid duplicates
       await Attendance.findOneAndUpdate(
-        { employeeId, date: dateToMark },
+        { employeeId, date: shiftDate },
         attendanceData,
         { upsert: true, new: true }
       );
 
-      attendanceRecords.push(dateToMark);
+      attendanceRecords.push(shiftDate);
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
@@ -262,7 +279,8 @@ const addLeave = async (req: Request, res: Response): Promise<void> => {
 
     const employee = await Employee.findOne({ userId })
       .populate('userId', 'name email')
-      .populate('department', 'name');
+      .populate('department', 'name')
+      .populate('shiftId');
 
     if (!employee) {
       res.status(404).json({
@@ -353,10 +371,10 @@ const addLeave = async (req: Request, res: Response): Promise<void> => {
       .populate('department', 'name');
 
     const employeeInfo = getEmployeeInfo(populatedEmployee);
-    const employeeEmail = isPopulatedEmployee(populatedEmployee) 
-      ? populatedEmployee.userId?.email 
+    const employeeEmail = isPopulatedEmployee(populatedEmployee)
+      ? populatedEmployee.userId?.email
       : '';
-    
+
     await sendLeaveApplicationEmail(
       employeeInfo.name,
       employeeEmail || 'noreply@company.com',
