@@ -5,6 +5,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors"
 import { connectToDatabase } from "./config/db";
+import { initializeAutoCheckoutScheduler } from "./utils/autoCheckout";
 import authRouter from "./routes/auth"
 import departmentRouter from "./routes/department"
 import employeeRouter from "./routes/employee"
@@ -21,6 +22,10 @@ const port = process.env.PORT
 async function startServer() {
   try {
     await connectToDatabase();
+
+    // Initialize auto-checkout scheduler
+    initializeAutoCheckoutScheduler();
+
     // Middleware
     // app.use(cors({
     //   origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
