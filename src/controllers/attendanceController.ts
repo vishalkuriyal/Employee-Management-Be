@@ -4,7 +4,7 @@ import Employee from "../models/employee";
 import Leave from "../models/leave";
 import Shift from "../models/shift";
 import { Types } from "mongoose";
-import { formatTimeUTC } from "../utils/shiftHelpers";
+import { formatTimeUTC, formatTimeIST } from "../utils/shiftHelpers";
 
 // ========================================
 // SHIFT HELPER FUNCTIONS
@@ -683,8 +683,8 @@ const getAllEmployeesAttendance = async (req: Request, res: Response): Promise<v
         } : { name: 'Not Assigned', time: '-' },
         attendance: attendance ? {
           status: attendance.status,
-          checkIn: formatTimeUTC(attendance.checkIn),
-          checkOut: formatTimeUTC(attendance.checkOut),
+          checkIn: formatTimeIST(attendance.checkIn),
+          checkOut: formatTimeIST(attendance.checkOut),
           workingHours: attendance.workingHours || 0,
           isLate: attendance.isLate || false,
           lateByMinutes: attendance.lateByMinutes || 0,

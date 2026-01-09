@@ -131,3 +131,18 @@ export const formatTimeUTC = (date: Date | null | undefined): string | null => {
   const seconds = String(dateObj.getUTCSeconds()).padStart(2, '0');
   return `${hours}:${minutes}:${seconds}`;
 };
+
+/**
+ * Format a Date object to HH:MM:SS in Indian Standard Time (UTC+5:30)
+ */
+export const formatTimeIST = (date: Date | null | undefined): string | null => {
+  if (!date) return null;
+  const dateObj = new Date(date);
+  // IST is UTC+5:30 -> offset in minutes = 330
+  const offsetMinutes = 330;
+  const istDate = new Date(dateObj.getTime() + offsetMinutes * 60 * 1000);
+  const hours = String(istDate.getUTCHours()).padStart(2, '0');
+  const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
