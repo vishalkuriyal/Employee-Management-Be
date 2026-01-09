@@ -42,9 +42,9 @@ const addEmployee = async (req: Request, res: Response): Promise<void> => {
 
     // Validation for required fields
     if (!shiftId) {
-      res.status(400).json({ 
-        success: false, 
-        error: "Shift assignment is required" 
+      res.status(400).json({
+        success: false,
+        error: "Shift assignment is required"
       });
       return;
     }
@@ -52,9 +52,9 @@ const addEmployee = async (req: Request, res: Response): Promise<void> => {
     const user = await User.findOne({ email });
 
     if (user) {
-      res.status(400).json({ 
-        success: false, 
-        error: "User already registered" 
+      res.status(400).json({
+        success: false,
+        error: "User already registered"
       });
       return;
     }
@@ -88,15 +88,15 @@ const addEmployee = async (req: Request, res: Response): Promise<void> => {
 
     await newEmployee.save();
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Employee created successfully" 
+    res.status(200).json({
+      success: true,
+      message: "Employee created successfully"
     });
     return;
   } catch (error) {
     console.error("Error in addEmployee:", error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: "Server error in adding employee",
       details: error instanceof Error ? error.message : String(error)
     });
@@ -118,9 +118,9 @@ const getEmployees = async (req: Request, res: Response): Promise<void> => {
     return;
   } catch (error) {
     console.error("Error in getEmployees:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Get employees server error" 
+    res.status(500).json({
+      success: false,
+      error: "Get employees server error"
     });
     return;
   }
@@ -147,9 +147,9 @@ const getEmployee = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (!employee) {
-      res.status(404).json({ 
-        success: false, 
-        error: "Employee not found" 
+      res.status(404).json({
+        success: false,
+        error: "Employee not found"
       });
       return;
     }
@@ -158,9 +158,9 @@ const getEmployee = async (req: Request, res: Response): Promise<void> => {
     return;
   } catch (error) {
     console.error("Error in getEmployee:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: "View employee server error" 
+    res.status(500).json({
+      success: false,
+      error: "View employee server error"
     });
     return;
   }
@@ -177,6 +177,7 @@ const UpdateEmployee = async (req: Request, res: Response): Promise<void> => {
     const {
       name,
       email,
+      password,
       dob,
       doj,
       gender,
@@ -195,9 +196,9 @@ const UpdateEmployee = async (req: Request, res: Response): Promise<void> => {
     const employee = await Employee.findById(id);
 
     if (!employee) {
-      res.status(404).json({ 
-        success: false, 
-        error: "Employee not found" 
+      res.status(404).json({
+        success: false,
+        error: "Employee not found"
       });
       return;
     }
@@ -205,9 +206,9 @@ const UpdateEmployee = async (req: Request, res: Response): Promise<void> => {
     // Get current user data to access the current image filename
     const currentUser = await User.findById(employee.userId);
     if (!currentUser) {
-      res.status(404).json({ 
-        success: false, 
-        error: "User associated with employee not found" 
+      res.status(404).json({
+        success: false,
+        error: "User associated with employee not found"
       });
       return;
     }
@@ -217,6 +218,12 @@ const UpdateEmployee = async (req: Request, res: Response): Promise<void> => {
     if (name) updateUserData.name = name;
     if (email) updateUserData.email = email;
     if (role) updateUserData.role = role;
+
+    // Handle password update if provided
+    if (password) {
+      const hashPassword = await bcrypt.hash(password, 10);
+      updateUserData.password = hashPassword;
+    }
 
     // Check if new image is uploaded
     if (req.file) {
@@ -372,9 +379,9 @@ const fetchEmployeesByDepId = async (req: Request, res: Response): Promise<void>
     return;
   } catch (error) {
     console.error("Error in fetchEmployeesByDepId:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Get employees by department server error" 
+    res.status(500).json({
+      success: false,
+      error: "Get employees by department server error"
     });
     return;
   }
@@ -391,29 +398,29 @@ const fetchEmployeesByShiftId = async (req: Request, res: Response): Promise<voi
       .populate('department')
       .populate('shiftId');
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       employees,
-      count: employees.length 
+      count: employees.length
     });
     return;
   } catch (error) {
     console.error("Error in fetchEmployeesByShiftId:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Get employees by shift server error" 
+    res.status(500).json({
+      success: false,
+      error: "Get employees by shift server error"
     });
     return;
   }
 };
 
-export { 
-  addEmployee, 
-  upload, 
-  getEmployees, 
-  getEmployee, 
-  UpdateEmployee, 
-  DeleteEmployee, 
+export {
+  addEmployee,
+  upload,
+  getEmployees,
+  getEmployee,
+  UpdateEmployee,
+  DeleteEmployee,
   fetchEmployeesByDepId,
   fetchEmployeesByShiftId // ⭐ NEW: Export new function
 };
